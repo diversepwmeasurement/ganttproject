@@ -1,36 +1,40 @@
-name: Build Minor Update
-
-on:
-    push:
-        branches: ['BRANCH*']
-        paths: ['ganttproject-builder/BUILD-HISTORY-MINOR']
 env:
-    MAJOR_VERSION: 3.3
-
+  MAJOR_VERSION: 3.3
 jobs:
-    Linux:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v3
-            - name: Checkout submodules
-              shell: bash
-              run: |
-                  git submodule sync --recursive
-                  git submodule update --init --force --recursive --depth=1
-            - uses: actions/setup-java@v3
-              with:
-                  distribution: 'liberica'
-                  java-version: 17.0.9
-                  java-package: jdk+fx
-                  cache: 'gradle'
-            - id: 'auth'
-              uses: 'google-github-actions/auth@v1'
-              with:
-                  credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+  Linux:
+    runs-on: self-hosted
+    steps:
+    - continue-on-error: true
+      uses: actions/checkout@v3
+    - continue-on-error: true
+      name: Checkout submodules
+      run: 'git submodule sync --recursive
 
-            - name: 'Set up Cloud SDK'
-              uses: 'google-github-actions/setup-gcloud@v1'
+        git submodule update --init --force --recursive --depth=1
 
-            - name: Build minor update
-              run: |
-                  build-bin/package-update.sh
+        '
+      shell: bash
+    - continue-on-error: true
+      uses: actions/setup-java@v3
+      with:
+        cache: gradle
+        distribution: liberica
+        java-package: jdk+fx
+        java-version: 17.0.9
+    - continue-on-error: true
+      id: auth
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+    - continue-on-error: true
+      name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+    - continue-on-error: true
+      name: Build minor update
+      run: 'build-bin/package-update.sh
+
+        '
+name: Build Minor Update
+on:
+  repository_dispatch:
+    types: trigger-ga___build-update-minor.yml
